@@ -7,17 +7,17 @@ These apps use Slack's outgoing webhooks and slash commands to post messages fro
 Randomly groups team members and assigns them a randomly chosen topic.
 
 ### API - Slack commands
-**/addrambler**
+**/addrambler:**
 Adds a person to the team
 
 
-**/skiprandomrambles**
+**/skiprandomrambles:**
 Allows a participant to remove themselves from this week's Random Rambles event
 
-**/addtopic**
+**/addtopic:**
 Allows users to add a topic to the list of random topics
 
-**/listtopics**
+**/listtopics:**
 Allows users to view the list of random topics
 
 
@@ -25,9 +25,9 @@ Allows users to view the list of random topics
 Notifies the channel of any birthdays that day and posts a selected birthday GIF from Giphy.
 
 ### API - Slack commands
-**/listbirthdays**
+**/listbirthdays:**
 Lists upcoming birthdays in the next two months
 
 
-**/addbirthday**
+**/addbirthday:**
 Allows users to add their name and birthday
