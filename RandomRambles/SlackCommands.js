@@ -19,7 +19,7 @@ function doPost(request){
     }
   }
   catch(e) {
-    MailApp.sendEmail(ERROR_EMAIL, "List Birthday Error: ", e);
+    MailApp.sendEmail(ERROR_EMAIL, "List Randon Rambles Error: ", e);
   }
 }
 
