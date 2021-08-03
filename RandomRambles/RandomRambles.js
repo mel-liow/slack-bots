@@ -2,6 +2,12 @@ var SLACK_WEBHOOK_URL = PropertiesService.getScriptProperties().getProperty('SLA
 var GOOGLE_SHEET_NAME = PropertiesService.getScriptProperties().getProperty('GOOGLE_SHEET_NAME');
 var ERROR_EMAIL = PropertiesService.getScriptProperties().getProperty('ERROR_EMAIL');
 
+
+/**
+ * Used to remind the channel that they can decline the meeting and opt out - triggered function
+ * 
+ * If you want to use the functionality then add this to the list of triggers and set it to 9AM.
+ */
 function randomRambleReminder() {
 
   const ss = SpreadsheetApp.getActive();
@@ -9,38 +15,49 @@ function randomRambleReminder() {
   sheet.getRange("B2:B").clearContent();
 
   let payload = {
-    "text": `Happy Random Ramble day! Stay tuned for your groups 🥳. Please opt yourself out by 12pm if you can't make it by using the command '/skipRandomRambles <your name>'`
+    "text": `Happy Coffee morning! Stay tuned for your groups 🥳. Please opt yourself out by 12pm if you can't make it by using the command '/skipRandomRambles <your name>'`
   }
   return sendAlert(payload);
 }
 
+
+/**
+ * Randomly groups users listed - triggered function
+ * 
+ * This function reads in the spreadsheet and creates an object keyed by the column headings.
+ * It splits the list of participants into groups defined by the GroupNumber column then sends a message to the
+ * slack channel notifiying them of the link they should attend.
+ */
 function randomRambleGroups() {
 
-  const ss = SpreadsheetApp.getActive();
-  const sheet = ss.getSheetByName(GOOGLE_SHEET_NAME);
+	try { 
+		const ss = SpreadsheetApp.getActive();
+		const sheet = ss.getSheetByName(GOOGLE_SHEET_NAME);
 
-  const values = sheet.getDataRange().getValues();
-  const headers = values.shift();
-  const data = {}
+		const values = sheet.getDataRange().getValues();
+		const headers = values.shift();
+		const data = {}
 
-  headers.forEach((el,i) => {
-    let vals = []
-    values.forEach(row => {
-      if (row[i]) {
-        vals.push(row[i])
-      }
-    })
-    data[el] = vals;
-  })
+		headers.forEach((el,i) => {
+			let vals = []
+			values.forEach(row => {
+				if (row[i]) {
+					vals.push(row[i])
+				}
+			})
+			data[el] = vals;
+		})
+		
+		const participants = data.Members.filter( ( el ) => !data.Decliners.includes( el ) );
+
+		const randomGroups = randomlyGroup(participants, data.NumberOfGroups)
   
-  const participants = data.Members.filter( ( el ) => !data.Decliners.includes( el ) );
-
-  const randomGroups = randomlyGroup(participants)
-
-  const numGroups = randomGroups.length
-  const topics = getRandomTopic(data.Topics, numGroups)
-  const payload = buildSlackMessage(randomGroups, topics, data.MeetLinks);
-  sendAlert(payload);
+		const payload = buildSlackMessage(randomGroups, data.MeetLinks);
+	
+		sendAlert(payload);
+  } catch(e) {
+    MailApp.sendEmail(ERROR_EMAIL, "Random Ramble Scheduler Error: ", e);
+  }
 }
 
 
@@ -50,7 +67,7 @@ function randomRambleGroups() {
  * with the kth index to reduce time complexity to O(n) compared to 
  * O(n^2) in the original
  */
-function randomlyGroup(participants) {
+function randomlyGroup(participants, numberOfGroups) {
   const total = participants.length
 
   let temp
@@ -60,23 +77,27 @@ function randomlyGroup(participants) {
     participants[i] = participants[randomIndex]
     participants[randomIndex] = temp
   }
-  return evenlyGroup(participants)
+
+  return evenlyGroup(participants, numberOfGroups)
 }
 
 /**
- * Split participants into groups of a minimum size
+ * Split participants into evenly sized groups
+ * 
+ * This function splits the participants into equal sized groups then 
+ * distributes the remaining participants across them so that groups are
+ * roughly the same size
  */
-function evenlyGroup(participants){
+function evenlyGroup(participants, numberOfGroups){
   const total = participants.length;
-  const minGroupSize = 4;
 
-  if (total < minGroupSize * 2) { 
-    return [participants]
+  if (!numberOfGroups) {
+    numberOfGroups = 2;
   }
 
-  const remainder = total % minGroupSize;
+  const remainder = total % numberOfGroups;
   const leftover = participants.splice(0, remainder)
-  const groups = chunkArray(participants, minGroupSize)
+  const groups = chunkArray(participants, numberOfGroups)
 
   if (remainder > 0 ){
     if (leftover.length > groups.length) {
@@ -90,12 +111,14 @@ function evenlyGroup(participants){
   return groups
 }
 
-function chunkArray(myArray, size){
-    const results = [];
-    while (myArray.length) {
-        results.push(myArray.splice(0, size));
-    }
-    return results;
+function chunkArray(participants, numberOfGroups){
+  const size = Math.floor(participants.length / numberOfGroups);
+  const results = [];
+
+  while (participants.length) {
+    results.push(participants.splice(0, size));
+  }
+  return results;
 }
 
 function getRandomInt(max) {
@@ -111,14 +134,14 @@ function getRandomTopic(topics, num) {
   return randomTopics
 }
 
-function buildSlackMessage(groups, topics, meetLinks) {
+function buildSlackMessage(groups, meetLinks) {
   let payload = {
     "blocks": [
       {
         "type": "section",
         "text": {
           "type": "mrkdwn",
-          "text": ":bell: *Random Rambles Groups* :bell:"
+          "text": ":coffee: *Happy coffee morning day* :coffee:"
         }
       },
       {
@@ -135,7 +158,7 @@ function buildSlackMessage(groups, topics, meetLinks) {
         "type": "section",
         "text": {
           "type": "mrkdwn",
-          "text": `*Group ${i+1}:* ${parseGroup} \n *Suggested Random Topic:* ${topics[i]}`
+          "text": `*Group ${i+1}:* ${parseGroup}`
         },
         "accessory": {
           "type": "button",
