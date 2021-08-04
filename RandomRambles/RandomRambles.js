@@ -52,8 +52,8 @@ function randomRambleGroups() {
 
     const randomGroups = randomlyGroup(participants, data.NumberOfGroups)
 
-    let topics =  !!data.ShouldShowTopics[0] ? getRandomTopic(data.Topics, randomGroups.length) : null
-    
+    let topics =  !!data.ShouldShowTopics[0] ? getRandomTopic(data.Topics, randomGroups.length) : []
+
     const payload = buildSlackMessage(randomGroups, data.MeetLinks, topics);
   
     sendAlert(payload);
