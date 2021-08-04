@@ -30,31 +30,33 @@ function randomRambleReminder() {
  */
 function randomRambleGroups() {
 
-	try { 
-		const ss = SpreadsheetApp.getActive();
-		const sheet = ss.getSheetByName(GOOGLE_SHEET_NAME);
+  try { 
+    const ss = SpreadsheetApp.getActive();
+    const sheet = ss.getSheetByName(GOOGLE_SHEET_NAME);
 
-		const values = sheet.getDataRange().getValues();
-		const headers = values.shift();
-		const data = {}
+    const values = sheet.getDataRange().getValues();
+    const headers = values.shift();
+    const data = {}
 
-		headers.forEach((el,i) => {
-			let vals = []
-			values.forEach(row => {
-				if (row[i]) {
-					vals.push(row[i])
-				}
-			})
-			data[el] = vals;
-		})
-		
-		const participants = data.Members.filter( ( el ) => !data.Decliners.includes( el ) );
+    headers.forEach((el,i) => {
+      let vals = []
+      values.forEach(row => {
+        if (row[i]) {
+          vals.push(row[i])
+        }
+      })
+      data[el] = vals;
+    })
+    
+    const participants = data.Members.filter( ( el ) => !data.Decliners.includes( el ) );
 
-		const randomGroups = randomlyGroup(participants, data.NumberOfGroups)
+    const randomGroups = randomlyGroup(participants, data.NumberOfGroups)
+
+    let topics =  !!data.ShouldShowTopics[0] ? getRandomTopic(data.Topics, randomGroups.length) : null
+    
+    const payload = buildSlackMessage(randomGroups, data.MeetLinks, topics);
   
-		const payload = buildSlackMessage(randomGroups, data.MeetLinks);
-	
-		sendAlert(payload);
+    sendAlert(payload);
   } catch(e) {
     MailApp.sendEmail(ERROR_EMAIL, "Random Ramble Scheduler Error: ", e);
   }
@@ -134,7 +136,7 @@ function getRandomTopic(topics, num) {
   return randomTopics
 }
 
-function buildSlackMessage(groups, meetLinks) {
+function buildSlackMessage(groups, meetLinks, topics) {
   let payload = {
     "blocks": [
       {
@@ -158,7 +160,7 @@ function buildSlackMessage(groups, meetLinks) {
         "type": "section",
         "text": {
           "type": "mrkdwn",
-          "text": `*Group ${i+1}:* ${parseGroup}`
+          "text": `*Group ${i+1}:* ${parseGroup} ${!topics.length ? `\n *Suggested Random Topic:* ${topics[i]}` : ''}`
         },
         "accessory": {
           "type": "button",
@@ -169,9 +171,9 @@ function buildSlackMessage(groups, meetLinks) {
           },
           "value": `${i}`,
           "url": `${meetLinks[i]}`,
-				  "action_id": `button-action-${i}`
+          "action_id": `button-action-${i}`
         }
-		  }
+      }
     )
   })
   return payload;
