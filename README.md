@@ -1,10 +1,10 @@
 # slack-bots
 Various small Google App Script - Slack applications.
 
-These apps use Slack's outgoing webhooks and slash commands to post messages from a Google app script. 
+These apps use Slack's outgoing webhooks and slash commands to post messages from a Google app script. For more information on how to deploy a Slack bot visit their [API](https://api.slack.com/apps)
 
 ## Random Rambles
-Randomly groups team members and can optionally assign 
+Randomly groups team members and can optionally assign topics.
 The app reads and writes to a [Google spreadsheet](https://docs.google.com/spreadsheets/d/1DavAlt6IAHHZaplTEvHbBsXL01huuivndFEv8YftuhI). 
 
 ### API - Slack commands
