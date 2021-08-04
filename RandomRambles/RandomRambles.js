@@ -160,7 +160,7 @@ function buildSlackMessage(groups, meetLinks, topics) {
         "type": "section",
         "text": {
           "type": "mrkdwn",
-          "text": `*Group ${i+1}:* ${parseGroup} ${!topics.length ? `\n *Suggested Random Topic:* ${topics[i]}` : ''}`
+          "text": `*Group ${i+1}:* ${parseGroup} ${!!topics.length ? `\n *Suggested Random Topic:* ${topics[i]}` : ''}`
         },
         "accessory": {
           "type": "button",
