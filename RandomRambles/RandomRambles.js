@@ -48,7 +48,7 @@ function randomRambleGroups() {
       data[el] = vals;
     })
   
-    if (isScheduledDay()) {
+    if (isScheduledDay(data.DayOfWeek)) {
       const participants = data.Members.filter( ( el ) => !data.Decliners.includes( el ) );
 
       const randomGroups = randomlyGroup(participants, data.NumberOfGroups)
