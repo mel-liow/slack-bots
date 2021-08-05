@@ -47,19 +47,33 @@ function randomRambleGroups() {
       })
       data[el] = vals;
     })
-    
-    const participants = data.Members.filter( ( el ) => !data.Decliners.includes( el ) );
-
-    const randomGroups = randomlyGroup(participants, data.NumberOfGroups)
-
-    let topics =  !!data.ShouldShowTopics[0] ? getRandomTopic(data.Topics, randomGroups.length) : []
-
-    const payload = buildSlackMessage(randomGroups, data.MeetLinks, topics);
   
-    sendAlert(payload);
+    if (isScheduledDay()) {
+      const participants = data.Members.filter( ( el ) => !data.Decliners.includes( el ) );
+
+      const randomGroups = randomlyGroup(participants, data.NumberOfGroups)
+  
+      let topics =  !!data.ShouldShowTopics[0] ? getRandomTopic(data.Topics, randomGroups.length) : []
+  
+      const payload = buildSlackMessage(randomGroups, data.MeetLinks, topics);
+    
+      sendAlert(payload);
+    } else {
+      return
+    }
+    
   } catch(e) {
-    MailApp.sendEmail(ERROR_EMAIL, "Random Ramble Scheduler Error: ", e);
+    MailApp.sendEmail(ERROR_EMAIL, "AtomBot: Random Ramble Scheduler Error", e);
   }
+}
+
+function isScheduledDay(dayToRun) {
+
+  const dayList = ["Sunday","Monday","Tuesday","Wednesday ","Thursday","Friday","Saturday"];
+  const today = new Date()
+  const day = today.getDay()
+
+  return dayList[day] === dayToRun
 }
 
 
