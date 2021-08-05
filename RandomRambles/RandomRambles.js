@@ -69,7 +69,7 @@ function randomRambleGroups() {
 
 function isScheduledDay(dayToRun) {
 
-  const dayList = ["Sunday","Monday","Tuesday","Wednesday ","Thursday","Friday","Saturday"];
+  const dayList = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
   const today = new Date()
   const day = today.getDay()
 
