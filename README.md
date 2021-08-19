@@ -1,5 +1,6 @@
 # slack-bots
-Various small Google App Script - Slack applications.
+Various small Google App Script Slack applications.
+
 
 These apps use Slack's outgoing webhooks and slash commands to post messages from a Google app script. For more information on how to deploy a Slack bot visit their [API](https://api.slack.com/apps)
 
